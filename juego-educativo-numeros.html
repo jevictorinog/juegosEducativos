@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra el Número Mínimo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .info span {
+            margin: 5px;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card {
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .card:hover {
+            background-color: #45a049;
+        }
+        .card.wrong {
+            background-color: #f44336;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #007B9A;
+        }
+        .instructions, .summary {
+            margin-top: 20px;
+            text-align: justify;
+        }
+        .credit {
+            margin-top: 20px;
+            font-style: italic;
+        }
+        .congratulations {
+            font-size: 24px;
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Encuentra el Número Mínimo</h1>
+        <div class="info">
+            <span>Nivel: <span id="level">1</span></span>
+            <span>Tiempo: <span id="time">0.0</span>s</span>
+            <span>Promedio: <span id="average">0.0</span>s</span>
+            <span>Aciertos: <span id="correctAttempts">0</span>/<span id="totalAttempts">0</span></span>
+        </div>
+        <div class="cards" id="cards"></div>
+        <button id="restart">Reiniciar Juego</button>
+        <div class="instructions">
+            <h2>Instrucciones:</h2>
+            <p>En este juego, debes encontrar el número más pequeño entre las tarjetas mostradas. Haz clic en la tarjeta con el número más bajo para avanzar al siguiente nivel. El juego se vuelve más difícil a medida que avanzas, aumentando la cantidad de tarjetas y cambiando los tipos de números. ¡Buena suerte!</p>
+        </div>
+        <div class="summary" id="summary" style="display: none;">
+            <h2>Resumen del Juego</h2>
+            <p>Niveles completados: <span id="completedLevels"></span></p>
+            <p>Tiempo total: <span id="totalTime"></span> segundos</p>
+            <p>Tiempo promedio por nivel: <span id="averageTime"></span> segundos</p>
+            <p>Aciertos: <span id="finalCorrectAttempts"></span>/<span id="finalTotalAttempts"></span></p>
+            <div class="congratulations" id="congratulations"></div>
+        </div>
+        <div class="credit">
+            <p>Elaborado por Jorge Victorino</p>
+        </div>
+    </div>
+
+    <script>
+        const cardContainer = document.getElementById('cards');
+        const levelEl = document.getElementById('level');
+        const timeEl = document.getElementById('time');
+        const averageEl = document.getElementById('average');
+        const correctAttemptsEl = document.getElementById('correctAttempts');
+        const totalAttemptsEl = document.getElementById('totalAttempts');
+        const restartBtn = document.getElementById('restart');
+        const summaryEl = document.getElementById('summary');
+
+        let level = 1;
+        let cardCounts = [8, 12, 16, 20, 30];
+        let startTime, levelStartTime;
+        let totalTime = 0;
+        let levelTimes = [];
+        let gameInterval;
+        let correctAttempts = 0;
+        let totalAttempts = 0;
+
+        function startGame() {
+            level = 1;
+            totalTime = 0;
+            levelTimes = [];
+            correctAttempts = 0;
+            totalAttempts = 0;
+            startTime = new Date();
+            levelStartTime = new Date();
+            updateLevel();
+            startTimer();
+            updateAttempts();
+            summaryEl.style.display = 'none';
+        }
+
+        function startTimer() {
+            gameInterval = setInterval(() => {
+                const currentTime = new Date();
+                const elapsedTime = (currentTime - startTime) / 1000;
+                timeEl.textContent = elapsedTime.toFixed(1);
+            }, 100);
+        }
+
+        function updateLevel() {
+            levelEl.textContent = level;
+            const cardCount = level <= 5 ? cardCounts[level - 1] : 30;
+            createCards(cardCount);
+        }
+
+        function createCards(count) {
+            cardContainer.innerHTML = '';
+            let numbers = [];
+            let minNumber;
+
+            if (level <= 3) {
+                numbers = Array.from({length: count}, () => Math.floor(Math.random() * 99) + 101);
+            } else if (level <= 5) {
+                numbers = Array.from({length: count}, () => Math.floor(Math.random() * 399) - 199);
+            } else {
+                numbers = Array.from({length: count}, () => (Math.random() * 399 - 199).toFixed(1));
+            }
+
+            minNumber = Math.min(...numbers.map(n => parseFloat(n)));
+
+            numbers.forEach(number => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = number;
+                card.addEventListener('click', () => checkCard(card, parseFloat(number), minNumber));
+                cardContainer.appendChild(card);
+            });
+        }
+
+        function checkCard(card, number, minNumber) {
+            totalAttempts++;
+            if (number === minNumber) {
+                correctAttempts++;
+                const levelEndTime = new Date();
+                const levelTime = (levelEndTime - levelStartTime) / 1000;
+                levelTimes.push(levelTime);
+                totalTime += levelTime;
+
+                level++;
+                if (level <= 6) {
+                    updateLevel();
+                    levelStartTime = new Date();
+                    updateAverage();
+                    updateAttempts();
+                } else {
+                    endGame();
+                }
+            } else {
+                card.classList.add('wrong');
+            }
+            updateAttempts();
+        }
+
+        function updateAverage() {
+            const average = totalTime / levelTimes.length;
+            averageEl.textContent = average.toFixed(1);
+        }
+
+        function updateAttempts() {
+            correctAttemptsEl.textContent = correctAttempts;
+            totalAttemptsEl.textContent = totalAttempts;
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            cardContainer.innerHTML = '';
+            summaryEl.style.display = 'block';
+            document.getElementById('completedLevels').textContent = level - 1;
+            document.getElementById('totalTime').textContent = totalTime.toFixed(1);
+            document.getElementById('averageTime').textContent = (totalTime / (level - 1)).toFixed(1);
+            document.getElementById('finalCorrectAttempts').textContent = correctAttempts;
+            document.getElementById('finalTotalAttempts').textContent = totalAttempts;
+            
+            const accuracy = (correctAttempts / totalAttempts) * 100;
+            let congratsMessage = `¡Felicidades! Has completado el juego con una precisión del ${accuracy.toFixed(2)}%.`;
+            if (accuracy >= 90) {
+                congratsMessage += " ¡Excelente trabajo!";
+            } else if (accuracy >= 70) {
+                congratsMessage += " ¡Buen trabajo!";
+            } else {
+                congratsMessage += " Sigue practicando para mejorar.";
+            }
+            document.getElementById('congratulations').textContent = congratsMessage;
+        }
+
+        restartBtn.addEventListener('click', startGame);
+
+        startGame();
+    </script>
+</body>
+</html>

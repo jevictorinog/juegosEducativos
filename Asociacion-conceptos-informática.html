@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asociación de Conceptos de Programación. JV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .card {
+            width: 150px;
+            height: 100px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .card:hover {
+            background-color: #2980b9;
+        }
+        .card.selected {
+            background-color: #2ecc71;
+        }
+        .card.matched {
+            background-color: #27ae60;
+            cursor: default;
+        }
+        #stats {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #author {
+            margin-top: 20px;
+            font-style: italic;
+        }
+        #restart-btn {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background: linear-gradient(45deg, #ff4500 0%, #ffa500 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #restart-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Asociación de Conceptos de Programación</h1>
+        <p>Selecciona dos tarjetas haciendo click para asociar el concepto con su definición</p>
+        <div id="game-area" class="game-area"></div>
+        <div id="stats">Intentos: 0 | Tiempo: 0.0s</div>
+        <button id="restart-btn">Reiniciar tablero</button>
+        <div id="author">Elaborado por: Jorge Victorino</div>
+    </div>
+
+    <script>
+        const allConcepts = [
+            {concept: "Variable", definition: "Contenedor para almacenar datos"},
+            {concept: "Variable", definition: "Espacio para almacenar valores."},
+            {concept: "Comentario", definition: "Nota en el código no ejecutable"},
+            {concept: "Operador", definition: "Símbolo para computar valores"},
+            {concept: "Función", definition: "Bloque de código reutilizable"},
+            {concept: "Cadena de texto", definition: "Arreglo de caracteres"},
+            {concept: "Precedencia", definition: "Orden de evaluación de operaciones"},
+            {concept: "Instrucciones", definition: "Órdenes especificadas por un algoritmo"},
+            {concept: "Excepciones", definition: "Errores manejables durante la ejecución"},
+            {concept: "Acumulador", definition: "Variable que suma progresivamente valores"},
+            {concept: "Bandera", definition: "Indicador de estado en un programa"},
+            {concept: "Índice", definition: "Posición de un elemento en una colección."},
+            {concept: "Archivo", definition: "Datos almacenados bajo un nombre"},
+            {concept: "Bucle", definition: "Estructura para repetir código"},
+            {concept: "Condicional", definition: "Estructura para tomar decisiones"},
+            {concept: "Array", definition: "Colección ordenada de elementos"},
+            {concept: "Diccionario", definition: "Estructura de datos clave-valor"},
+            {concept: "Clase", definition: "Plantilla para crear objetos"},
+            {concept: "Herencia", definition: "Mecanismo para reutilizar código"},
+            {concept: "API", definition: "Interfaz para comunicar aplicaciones"},
+            {concept: "Algoritmo", definition: "Secuencia de pasos para resolver un problema"},
+            {concept: "Depuración", definition: "Proceso de identificar y corregir errores"},
+            {concept: "Compilador", definition: "Programa que traduce código a lenguaje máquina"},
+            {concept: "Git", definition: "Sistema de control de versiones"},
+            {concept: "Recursión", definition: "Función que se llama a sí misma"},
+            {concept: "Paradigma", definition: "Estilo o enfoque de programación"},
+            {concept: "Librería", definition: "Conjunto de funciones reutilizables"}
+        ];
+
+        let concepts = [];
+        let selectedCards = [];
+        let matchedPairs = 0;
+        let attempts = 0;
+        let startTime;
+        let timerInterval;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createCard(text, index) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.textContent = text;
+            card.dataset.index = index;
+            card.addEventListener('click', () => selectCard(card));
+            return card;
+        }
+
+        function selectCard(card) {
+            if (card.classList.contains('matched') || selectedCards.length === 2) return;
+            
+            card.classList.add('selected');
+            selectedCards.push(card);
+
+            if (selectedCards.length === 2) {
+                attempts++;
+                updateStats();
+                setTimeout(checkMatch, 500);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = selectedCards;
+            const index1 = parseInt(card1.dataset.index);
+            const index2 = parseInt(card2.dataset.index);
+
+            if (Math.floor(index1 / 2) === Math.floor(index2 / 2)) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+
+                if (matchedPairs === concepts.length) {
+                    clearInterval(timerInterval);
+                    alert('¡Felicidades! Has completado el tablero con éxito. Puedes mejorar inténtalo de nuevo');
+                }
+            }
+
+            card1.classList.remove('selected');
+            card2.classList.remove('selected');
+            selectedCards = [];
+        }
+
+        function updateStats() {
+            const currentTime = (Date.now() - startTime) / 1000;
+            document.getElementById('stats').textContent = `Intentos: ${attempts} | Tiempo: ${currentTime.toFixed(1)}s`;
+        }
+
+        function initGame() {
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = '';
+            const allCards = [];
+
+            shuffleArray(allConcepts);
+            concepts = allConcepts.slice(0, 10);
+            shuffleArray(concepts);
+
+            concepts.forEach((item, index) => {
+                allCards.push(createCard(item.concept, index * 2));
+                allCards.push(createCard(item.definition, index * 2 + 1));
+            });
+
+            shuffleArray(allCards);
+            allCards.forEach(card => gameArea.appendChild(card));
+
+            selectedCards = [];
+            matchedPairs = 0;
+            attempts = 0;
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateStats, 100);
+            updateStats();
+        }
+
+        document.getElementById('restart-btn').addEventListener('click', initGame);
+
+        initGame();
+    </script>
+</body>
+</html>
