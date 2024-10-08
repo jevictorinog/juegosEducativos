@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Aventura de los Números Mágicos!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌟</text></svg>');
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            color: #ff6b6b;
+            text-shadow: 2px 2px #feca57;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        #cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .card {
+            width: 80px;
+            height: 80px;
+            background-color: #4ecdc4;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.3s, background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .card.wrong {
+            background-color: #ff6b6b;
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        #info {
+            background-color: #feca57;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #info p {
+            margin: 5px 0;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        button {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            margin-top: 15px;
+            transition: background-color 0.3s, transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: #e74c3c;
+            transform: scale(1.05);
+        }
+        #instructions {
+            margin-top: 20px;
+            text-align: justify;
+            background-color: #a29bfe;
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+        }
+        #summary {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            background-color: #55efc4;
+            border-radius: 15px;
+            padding: 15px;
+            color: #2c3e50;
+        }
+        #author {
+            margin-top: 20px;
+            font-style: italic;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>¡Aventura de los Números Mágicos!</h1>
+        <div id="info">
+            <p>Nivel Mágico: <span id="level">1</span> 🧙‍♂️</p>
+            <p>Tiempo de Hechizo: <span id="time">0.0</span> segundos ⏳</p>
+            <p>Promedio de Tiempo Mágico: <span id="avg-time">0.0</span> segundos 🔮</p>
+            <p>Intentos de Magia: <span id="attempts">0</span> 🎩</p>
+        </div>
+        <div id="cards-container"></div>
+        <button id="restart">🔄 Reiniciar Aventura</button>
+        <div id="instructions">
+            <h3>📜 Instrucciones Mágicas:</h3>
+            <p>1. 🔍 Encuentra y haz clic en la carta con el número mágico más pequeño.</p>
+            <p>2. 🌟 Tu aventura comienza con 8 cartas y se vuelve más desafiante en cada nivel.</p>
+            <p>3. ➕➖ Los números pueden ser positivos, negativos o tener partes mágicas (decimales) en niveles avanzados.</p>
+            <p>4. ⚡ Intenta completar cada nivel con la menor cantidad de hechizos (intentos) posible.</p>
+            <p>5. 🏆 Al final de tu viaje, verás un resumen de tus hazañas mágicas.</p>
+        </div>
+        <div id="summary"></div>
+        <p id="author">Creado por el Mago Jorge Victorino 🧙‍♂️</p>
+    </div>
+
+    <script>
+        const cardContainer = document.getElementById('cards-container');
+        const levelElement = document.getElementById('level');
+        const timeElement = document.getElementById('time');
+        const avgTimeElement = document.getElementById('avg-time');
+        const attemptsElement = document.getElementById('attempts');
+        const restartButton = document.getElementById('restart');
+        const summaryElement = document.getElementById('summary');
+
+        let level = 1;
+        let cardCount = 8;
+        let startTime;
+        let totalTime = 0;
+        let minValue;
+        let attempts = 0;
+        let totalAttempts = 0;
+        let timerInterval;
+
+        const colors = ['#4ecdc4', '#45b7d8', '#f7b731', '#7bed9f', '#70a1ff', '#ff6b6b', '#5f27cd'];
+
+        function generateCards() {
+            cardContainer.innerHTML = '';
+            let numbers = [];
+            let min, max;
+
+            if (level <= 3) {
+                min = 100;
+                max = 200;
+            } else if (level <= 5) {
+                min = -200;
+                max = 200;
+            } else {
+                min = -90;
+                max = 90;
+            }
+
+            if (level > 5) {
+                numbers = Array.from({length: cardCount}, () => (Math.random() * (max - min) + min).toFixed(1));
+            } else {
+                numbers = Array.from({length: cardCount}, () => Math.floor(Math.random() * (max - min + 1) + min));
+            }
+
+            minValue = Math.min(...numbers.map(Number));
+
+            numbers.forEach((num, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = num;
+                card.style.backgroundColor = colors[index % colors.length];
+                card.addEventListener('click', () => checkCard(card, num));
+                cardContainer.appendChild(card);
+            });
+
+            startTime = performance.now();
+            startTimer();
+        }
+
+        function checkCard(card, value) {
+            attempts++;
+            attemptsElement.textContent = attempts;
+
+            if (Number(value) === minValue) {
+                stopTimer();
+                const levelTime = (performance.now() - startTime) / 1000;
+                totalTime += levelTime;
+
+                timeElement.textContent = levelTime.toFixed(1);
+                avgTimeElement.textContent = (totalTime / level).toFixed(1);
+
+                level++;
+                levelElement.textContent = level;
+                totalAttempts += attempts;
+                attempts = 0;
+
+                if (level <= 5) {
+                    cardCount = [8, 12, 20, 50, 100][level - 1];
+                    generateCards();
+                } else {
+                    showSummary();
+                }
+            } else {
+                card.classList.add('wrong');
+                setTimeout(() => card.classList.remove('wrong'), 500);
+            }
+        }
+
+        function startTimer() {
+            let startTime = performance.now();
+            timerInterval = setInterval(() => {
+                const currentTime = (performance.now() - startTime) / 1000;
+                timeElement.textContent = currentTime.toFixed(1);
+            }, 100);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function showSummary() {
+            cardContainer.innerHTML = '';
+            summaryElement.innerHTML = `
+                <h2>🎉 ¡Felicidades, Joven Mago! Has completado tu aventura.</h2>
+                <p>🕰️ Tiempo total de tu viaje: ${totalTime.toFixed(1)} segundos</p>
+                <p>⚡ Velocidad mágica promedio: ${(totalTime / 5).toFixed(1)} segundos por nivel</p>
+                <p>🎩 Total de hechizos lanzados: ${totalAttempts}</p>
+            `;
+        }
+
+        function restartGame() {
+            level = 1;
+            cardCount = 8;
+            totalTime = 0;
+            attempts = 0;
+            totalAttempts = 0;
+            levelElement.textContent = level;
+            timeElement.textContent = '0.0';
+            avgTimeElement.textContent = '0.0';
+            attemptsElement.textContent = attempts;
+            summaryElement.innerHTML = '';
+            stopTimer();
+            generateCards();
+        }
+
+        restartButton.addEventListener('click', restartGame);
+
+        generateCards();
+    </script>
+</body>
+</html>

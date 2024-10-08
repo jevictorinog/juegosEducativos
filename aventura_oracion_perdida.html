@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura de la Oración Perdida</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        .game-wrapper {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('https://api.placeholder.com/1920x1080?text=Fondo+de+Aventura');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        #game-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        #story {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #34495e;
+            line-height: 1.6;
+        }
+        
+        #sentence-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .word {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: move;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .word:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #answer-container {
+            min-height: 70px;
+            border: 3px dashed #bdc3c7;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        #answer-container.drag-over {
+            background-color: #ecf0f1;
+            border-color: #3498db;
+        }
+        
+        button {
+            background-color: #2ecc71;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1em;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #hint {
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+        
+        #level-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        
+        #restart-button {
+            background-color: #e67e22;
+        }
+        
+        #restart-button:hover {
+            background-color: #d35400;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div id="game-container">
+            <h1>Aventura de la Oración Perdida</h1>
+            <div id="level-indicator">Nivel 1</div>
+            <div id="story"></div>
+            <div id="sentence-container"></div>
+            <div id="answer-container"></div>
+            <button onclick="checkAnswer()">Verificar</button>
+            <button onclick="getHint()">Pista</button>
+            <button id="restart-button" onclick="restartLevel()">Reiniciar Nivel</button>
+            <div id="hint"></div>
+        </div>
+    </div>
+
+    <script>
+        const sentences = [
+            {
+                story: "Te encuentras en la entrada de un bosque misterioso. Un antiguo cartel de madera tiene una inscripción borrosa.",
+                words: ["El", "camino", "secreto", "se", "revela", "al", "valiente"],
+                hint: "Sujeto + Complemento + Verbo + Complemento"
+            },
+            {
+                story: "Avanzas por el sendero y llegas a un claro. En el centro, una estatua sostiene una placa con una frase enigmática.",
+                words: ["La", "sabiduría", "florece", "en", "el", "silencio", "del", "bosque"],
+                hint: "Sujeto + Verbo + Complemento de Lugar"
+            },
+            {
+                story: "Un arroyo cristalino cruza tu camino. En las piedras del fondo, ves palabras grabadas que forman una frase.",
+                words: ["El", "agua", "susurra", "secretos", "a", "quien", "sabe", "escuchar"],
+                hint: "Sujeto + Verbo + Objeto Directo + Complemento"
+            },
+            {
+                story: "Llegas a una cueva oscura. En la entrada, unas luciérnagas forman palabras luminosas en el aire.",
+                words: ["La", "oscuridad", "se", "desvanece", "ante", "la", "luz", "interior"],
+                hint: "Sujeto + Verbo Reflexivo + Complemento"
+            },
+            {
+                story: "En lo alto de una colina, encuentras un antiguo observatorio. Un telescopio apunta a una constelación que forma una frase.",
+                words: ["Las", "estrellas", "guían", "a", "quienes", "buscan", "su", "destino"],
+                hint: "Sujeto + Verbo + Complemento + Oración Subordinada"
+            },
+            {
+                story: "Desciendes a un valle cubierto de niebla. El viento mueve la bruma formando palabras efímeras.",
+                words: ["La", "niebla", "oculta", "y", "revela", "los", "misterios", "del", "valle"],
+                hint: "Sujeto + Verbo + Conjunción + Verbo + Objeto Directo"
+            },
+            {
+                story: "Cruzas un puente colgante sobre un profundo cañón. Cada tabla del puente tiene una palabra grabada.",
+                words: ["Cada", "paso", "nos", "acerca", "a", "nuestro", "verdadero", "ser"],
+                hint: "Sujeto + Pronombre + Verbo + Complemento"
+            },
+            {
+                story: "Entras en un jardín encantado. Las flores se abren revelando pétalos con palabras escritas.",
+                words: ["La", "belleza", "se", "encuentra", "en", "la", "diversidad", "de", "la", "vida"],
+                hint: "Sujeto + Verbo Reflexivo + Complemento de Lugar"
+            },
+            {
+                story: "Alcanzas la cima de una montaña nevada. El viento ha tallado una frase en la nieve.",
+                words: ["La", "cima", "es", "solo", "el", "comienzo", "de", "otra", "aventura"],
+                hint: "Sujeto + Verbo Ser + Complemento"
+            },
+            {
+                story: "Llegas a un antiguo templo en ruinas. En el altar central, una inscripción brilla con luz propia.",
+                words: ["El", "conocimiento", "es", "un", "tesoro", "que", "siempre", "te", "acompañará"],
+                hint: "Sujeto + Verbo Ser + Complemento + Oración Subordinada"
+            }
+        ];
+
+        let currentSentence;
+        let currentLevel = 0;
+
+        function startGame() {
+            currentSentence = sentences[currentLevel];
+            document.getElementById("story").textContent = currentSentence.story;
+            document.getElementById("level-indicator").textContent = `Nivel ${currentLevel + 1}`;
+            
+            setupSentence();
+        }
+
+        function setupSentence() {
+            const sentenceContainer = document.getElementById("sentence-container");
+            sentenceContainer.innerHTML = "";
+            
+            // Mezclar las palabras
+            const shuffledWords = [...currentSentence.words].sort(() => Math.random() - 0.5);
+            
+            shuffledWords.forEach(word => {
+                const wordElement = document.createElement("div");
+                wordElement.classList.add("word");
+                wordElement.draggable = true;
+                wordElement.textContent = word;
+                wordElement.addEventListener("dragstart", drag);
+                sentenceContainer.appendChild(wordElement);
+            });
+
+            document.getElementById("answer-container").innerHTML = "";
+            document.getElementById("hint").textContent = "";
+        }
+
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.textContent);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const wordElement = document.createElement("div");
+            wordElement.classList.add("word");
+            wordElement.textContent = data;
+            event.target.appendChild(wordElement);
+        }
+
+        function checkAnswer() {
+            const answerContainer = document.getElementById("answer-container");
+            const userAnswer = Array.from(answerContainer.children).map(child => child.textContent).join(" ");
+            const correctAnswer = currentSentence.words.join(" ");
+
+            if (userAnswer === correctAnswer) {
+                alert("¡Correcto! Avanzas al siguiente nivel.");
+                currentLevel++;
+                if (currentLevel < sentences.length) {
+                    startGame();
+                } else {
+                    alert("¡Felicidades! Has completado todos los niveles y descubierto los secretos del bosque mágico.");
+                    currentLevel = 0;
+                    startGame();
+                }
+            } else {
+                alert("Incorrecto. La frase no está completa o en el orden correcto. Intenta de nuevo.");
+            }
+        }
+
+        function getHint() {
+            document.getElementById("hint").textContent = currentSentence.hint;
+        }
+
+        function restartLevel() {
+            setupSentence();
+        }
+
+        // Configurar el área para soltar
+        const dropArea = document.getElementById("answer-container");
+        dropArea.addEventListener("dragover", allowDrop);
+        dropArea.addEventListener("drop", drop);
+        dropArea.addEventListener("dragenter", function(event) {
+            this.classList.add("drag-over");
+        });
+        dropArea.addEventListener("dragleave", function(event) {
+            this.classList.remove("drag-over");
+        });
+
+        // Iniciar el juego
+        startGame();
+    </script>
+</body>
+</html>

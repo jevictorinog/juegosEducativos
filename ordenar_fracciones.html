@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Ordenar Fracciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: #3498db;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            margin: 0 5px;
+            cursor: move;
+            user-select: none;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card .numerator, .card .denominator {
+            width: 100%;
+            text-align: center;
+        }
+        .card .fraction-line {
+            width: 80%;
+            height: 2px;
+            background-color: white;
+            margin: 5px 0;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        #modeToggle {
+            background-color: #e74c3c;
+        }
+        #modeToggle:hover {
+            background-color: #c0392b;
+        }
+        #congratsModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Ordena las Fracciones</h1>
+        <p>Arrastra las tarjetas para ordenar las fracciones de menor a mayor</p>
+        <div class="cards-container" id="cardsContainer"></div>
+        <div id="stats">
+            <p>Tiempo: <span id="time">00:00</span></p>
+            <p>Movimientos: <span id="moves">0</span></p>
+        </div>
+        <div class="controls">
+            <button id="restartButton">Reiniciar Juego</button>
+            <button id="modeToggle">Cambiar Modo</button>
+        </div>
+    </div>
+
+    <div id="congratsModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>¡Felicidades!</h2>
+            <p>Has ordenado todas las fracciones correctamente.</p>
+            <p>Tiempo: <span id="finalTime"></span></p>
+            <p>Movimientos: <span id="finalMoves"></span></p>
+        </div>
+    </div>
+
+    <script>
+        let cards = [];
+        let moves = 0;
+        let startTime;
+        let timerInterval;
+        let swapMode = true;
+
+        const cardsContainer = document.getElementById('cardsContainer');
+        const timeElement = document.getElementById('time');
+        const movesElement = document.getElementById('moves');
+        const restartButton = document.getElementById('restartButton');
+        const modeToggle = document.getElementById('modeToggle');
+        const modal = document.getElementById('congratsModal');
+        const closeModal = document.getElementsByClassName('close')[0];
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function generateFraction() {
+            let numerator, denominator;
+            do {
+                numerator = Math.floor(Math.random() * 10) + 1;
+                denominator = Math.floor(Math.random() * 10) + 1;
+            } while (numerator === denominator || denominator === 1);
+
+            const divisor = gcd(numerator, denominator);
+            return {
+                numerator: numerator / divisor,
+                denominator: denominator / divisor
+            };
+        }
+
+        function areFractionsUnique(fractions) {
+            const values = fractions.map(f => f.numerator / f.denominator);
+            return new Set(values).size === fractions.length;
+        }
+
+        function initializeGame() {
+            cards = [];
+            moves = 0;
+            movesElement.textContent = moves;
+            cardsContainer.innerHTML = '';
+            clearInterval(timerInterval);
+            startTime = new Date();
+
+            let fractions;
+            do {
+                fractions = Array(8).fill().map(generateFraction);
+            } while (!areFractionsUnique(fractions));
+
+            fractions.forEach((fraction, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.draggable = true;
+                card.innerHTML = `
+                    <div class="numerator">${fraction.numerator}</div>
+                    <div class="fraction-line"></div>
+                    <div class="denominator">${fraction.denominator}</div>
+                `;
+                card.dataset.index = index;
+                card.dataset.value = fraction.numerator / fraction.denominator;
+                cards.push(card);
+                cardsContainer.appendChild(card);
+
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragover', dragOver);
+                card.addEventListener('drop', drop);
+            });
+
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const currentTime = new Date();
+            const timeDiff = new Date(currentTime - startTime);
+            const minutes = timeDiff.getMinutes().toString().padStart(2, '0');
+            const seconds = timeDiff.getSeconds().toString().padStart(2, '0');
+            timeElement.textContent = `${minutes}:${seconds}`;
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.index);
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const draggedIndex = e.dataTransfer.getData('text');
+            const draggedElement = document.querySelector(`[data-index="${draggedIndex}"]`);
+            const targetElement = e.target.closest('.card');
+
+            if (draggedElement !== targetElement) {
+                moves++;
+                movesElement.textContent = moves;
+
+                if (swapMode) {
+                    swapElements(draggedElement, targetElement);
+                } else {
+                    insertElement(draggedElement, targetElement);
+                }
+
+                checkWinCondition();
+            }
+        }
+
+        function swapElements(el1, el2) {
+            const parent = el1.parentNode;
+            const sibling1 = el1.nextSibling === el2 ? el1 : el1.nextSibling;
+            el2.parentNode.insertBefore(el1, el2);
+            parent.insertBefore(el2, sibling1);
+        }
+
+        function insertElement(draggedEl, targetEl) {
+            const container = cardsContainer;
+            const draggedRect = draggedEl.getBoundingClientRect();
+            const targetRect = targetEl.getBoundingClientRect();
+            
+            if (draggedRect.left < targetRect.left) {
+                container.insertBefore(draggedEl, targetEl.nextSibling);
+            } else {
+                container.insertBefore(draggedEl, targetEl);
+            }
+        }
+
+        function checkWinCondition() {
+            const currentOrder = Array.from(cardsContainer.children).map(card => parseFloat(card.dataset.value));
+            if (JSON.stringify(currentOrder) === JSON.stringify([...currentOrder].sort((a, b) => a - b))) {
+                clearInterval(timerInterval);
+                showCongratsModal();
+            }
+        }
+
+        function showCongratsModal() {
+            const finalTimeElement = document.getElementById('finalTime');
+            const finalMovesElement = document.getElementById('finalMoves');
+            
+            finalTimeElement.textContent = timeElement.textContent;
+            finalMovesElement.textContent = moves;
+            
+            modal.style.display = "block";
+        }
+
+        restartButton.addEventListener('click', initializeGame);
+
+        modeToggle.addEventListener('click', () => {
+            swapMode = !swapMode;
+            modeToggle.textContent = swapMode ? 'Cambiar a Modo Inserción' : 'Cambiar a Modo Intercambio';
+        });
+
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>

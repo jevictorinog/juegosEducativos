@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de conocimientos previos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        #head {
+            padding: 10px;
+            margin: 10px;
+            color: white;
+        }
+        .question {
+            background-color: #fff8dc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+        }
+        .option {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f5deb3;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #d5dbdb;
+        }
+        .option.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        #submit {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(45deg, #ff4500 0%, #ffa500 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #submit:hover {
+            background-color: #27ae60;
+        }
+        #result {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id='head'>
+        <h1 style="color:white;">Diagnóstico de conocimientos previos</h1>
+        <h3>Elaborado por: Jorge Victorino</h3>
+        <P>Seleccione la respuesta más acertada para sumar la mayor cantidad de puntos</p></div>
+    <div id="quiz"></div>
+    <div id="result"></div>
+    <button id="submit">Enviar respuestas</button>
+
+    <script>
+        const questions = [
+            {
+                question: "¿Qué es el hardware?",
+                options: [
+                    { text: "Componentes físicos y tangibles de un sistema informático", points: 10 },
+                    { text: "Dispositivos electrónicos que se conectan al computador", points: 5 },
+                    { text: "Elementos externos que se conectan a un computador", points: 2 },
+                    { text: "Programas que hacen funcionar el computador apropiadamente", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es el software?",
+                options: [
+                    { text: "Conjunto de programas que permiten al computador realizar tareas específicas", points: 10 },
+                    { text: "Aplicaciones instaladas en el computador para realizar todo tipo de tareas", points: 5 },
+                    { text: "Sistemas operativos que controlan todos los elementos que componen el computador", points: 2 },
+                    { text: "Componentes físicos que almacenan datos e información", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un computador?",
+                options: [
+                    { text: "Dispositivo electrónico programable que procesa datos y los convierte en información útil", points: 10 },
+                    { text: "Máquina que realiza cálculos matemáticos complejos para resolver problemas", points: 5 },
+                    { text: "Equipo que permite navegar por internet y acceder a las redes sosciales", points: 2 },
+                    { text: "Herramienta para escribir documentos", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un programa?",
+                options: [
+                    { text: "Secuencia de instrucciones que le indican al computador cómo realizar una tarea", points: 10 },
+                    { text: "Aplicación que se descarga de internet y que instala en el computador o un dispositivo", points: 5 },
+                    { text: "Conjunto de archivos ejecutables con extensión .exe", points: 2 },
+                    { text: "Dispositivo que almacena datos temporalmente a los cuales puede acceder el computador", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es la información?",
+                options: [
+                    { text: "Datos procesados y organizados que tienen significado y valor para el usuario", points: 10 },
+                    { text: "Conjunto de datos almacenados digitalmente en el computador", points: 5 },
+                    { text: "Mensajes transmitidos a través de redes desde internet o de un computador", points: 2 },
+                    { text: "Números y texto ingresados en un programa a través de una interfaz de usuario", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un sistema de información?",
+                options: [
+                    { text: "Conjunto de elementos interrelacionados que recolectan, procesan, almacenan y distribuyen información", points: 10 },
+                    { text: "Software que gestiona bases de datos empresariales y provee una interfaz de usuario para interactuar con la información procesada", points: 5 },
+                    { text: "Red de computadoras que comparten recursos", points: 2 },
+                    { text: "Dispositivo que muestra datos en pantalla que provienen de los archivos registrados en un computador", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es una base de datos?",
+                options: [
+                    { text: "Colección organizada de datos estructurados que permite el acceso, gestión y actualización eficiente de la información", points: 10 },
+                    { text: "Sistema que almacena grandes cantidades de información", points: 5 },
+                    { text: "Archivo que contiene registros de usuarios y sus características medibles u observables", points: 2 },
+                    { text: "Programa que crea tablas y gráficos para entender mejor la información", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un virus informático?",
+                options: [
+                    { text: "Programa malicioso que se propaga e infecta otros archivos o sistemas, causando daños o robando información", points: 10 },
+                    { text: "Software que ralentiza el funcionamiento del computador", points: 5 },
+                    { text: "Código que se replica sin control en la memoria del computador y que puede ocasionar fallos importantes", points: 2 },
+                    { text: "Error en el sistema operativo que causa fallos", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es una página web?",
+                options: [
+                    { text: "Documento digital accesible a través de internet", points: 10 },
+                    { text: "Sitio en internet que muestra información", points: 5 },
+                    { text: "Interfaz gráfica de un sitio en internet ", points: 2 },
+                    { text: "Programa que permite navegar en internet", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un algoritmo?",
+                options: [
+                    { text: "Secuencia lógica y finita de pasos para resolver un problema", points: 10 },
+                    { text: "Conjunto de instrucciones que generan un programa en el computador", points: 5 },
+                    { text: "Fórmula matemática utilizada en programación", points: 2 },
+                    { text: "Lenguaje de programación avanzado que produce aplicaciones para el computador", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un sistema operativo?",
+                options: [
+                    { text: "Software que provee una interfaz para gestionar los recursos del hardware", points: 10 },
+                    { text: "Programa que controla el funcionamiento del computador y otros dispositivos de cómputo", points: 5 },
+                    { text: "Interfaz gráfica que permite interactuar y configurar el computador", points: 2 },
+                    { text: "Aplicación que optimiza el rendimiento del procesador y de la memoria", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es la memoria en un computador?",
+                options: [
+                    { text: "Componente que almacena datos y programas para su acceso rápido por parte del procesador", points: 10 },
+                    { text: "Espacio de almacenamiento en donde se guardan los archivos del usuario", points: 5 },
+                    { text: "Dispositivo que almacena información temporalmente", points: 2 },
+                    { text: "Programa que gestiona el almacenamiento de la información que genera el usuario", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es el procesador en un computador?",
+                options: [
+                    { text: "Unidad central que ejecuta instrucciones y procesa datos, realizando operaciones lógicas y aritméticas", points: 10 },
+                    { text: "Chip que controla la velocidad del computador", points: 5 },
+                    { text: "Componente que realiza cálculos matemáticos", points: 2 },
+                    { text: "Dispositivo que conecta todos los componentes del computador", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un archivo en informática?",
+                options: [
+                    { text: "Conjunto de datos estructurados y almacenados con un nombre único en un dispositivo de almacenamiento", points: 10 },
+                    { text: "Documento creado por un programa", points: 5 },
+                    { text: "Información guardada en el disco duro", points: 2 },
+                    { text: "Carpeta que contiene programas instalados", points: 0 }
+                ]
+            },
+            {
+                question: "¿Qué es un hacker?",
+                options: [
+                    { text: "Experto en sistemas informáticos capaz de identificar y explotar vulnerabilidades en redes y sistemas", points: 10 },
+                    { text: "Persona que crea programas para proteger sistemas", points: 5 },
+                    { text: "Especialista en seguridad informática", points: 2 },
+                    { text: "Criminal que roba información personal en internet", points: 0 }
+                ]
+            }
+        ];
+
+        let selectedQuestions = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function selectRandomQuestions(questions, count) {
+            const shuffled = [...questions];
+            shuffleArray(shuffled);
+            return shuffled.slice(0, count);
+        }
+
+        function createQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            selectedQuestions = selectRandomQuestions(questions, 10);
+
+            selectedQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `<p>${index + 1}. ${q.question}</p>`;
+
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options';
+
+                shuffleArray(q.options);
+
+                q.options.forEach((option, optionIndex) => {
+                    const optionButton = document.createElement('button');
+                    optionButton.className = 'option';
+                    optionButton.textContent = option.text;
+                    optionButton.onclick = function() {
+                        selectOption(this, questionDiv);
+                    };
+                    optionsDiv.appendChild(optionButton);
+                });
+
+                questionDiv.appendChild(optionsDiv);
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function selectOption(selectedOption, questionDiv) {
+            const options = questionDiv.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            selectedOption.classList.add('selected');
+        }
+
+        function calculateScore() {
+            let score = 0;
+            const questionDivs = document.querySelectorAll('.question');
+            questionDivs.forEach((questionDiv, index) => {
+                const selectedOption = questionDiv.querySelector('.option.selected');
+                if (selectedOption) {
+                    const optionIndex = Array.from(selectedOption.parentNode.children).indexOf(selectedOption);
+                    score += selectedQuestions[index].options[optionIndex].points;
+                }
+            });
+            return score;
+        }
+
+        document.getElementById('submit').addEventListener('click', function() {
+            const score = calculateScore();
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = `Tu puntaje es: ${score} de 100 puntos`;
+            alert(`Has completado el test con un puntaje de: ${score} puntos!!\n\nPuedes:\n- correguir las respuestas y re-enviar, o \n- recargar la página para un nuevo test`);
+        });
+
+        createQuiz();
+    </script>
+</body>
+</html>

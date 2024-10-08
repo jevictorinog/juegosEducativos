@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explora el Mundo: Juego de Geografía</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin: 20px 0;
+        }
+        #game-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+        }
+        #map-container {
+            width: 70%;
+            height: 500px;
+            background-color: #a6d5fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #info-panel {
+            width: 30%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-left: 20px;
+        }
+        #country-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #country-info {
+            font-size: 16px;
+        }
+        .country {
+            fill: #3498db;
+            stroke: #ffffff;
+            stroke-width: 0.5px;
+        }
+        .country:hover {
+            fill: #e74c3c;
+            cursor: pointer;
+        }
+        #quiz-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #quiz-question {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #quiz-options {
+            display: flex;
+            flex-direction: column;
+        }
+        .quiz-option {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .quiz-option:hover {
+            background-color: #bdc3c7;
+        }
+        #quiz-result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Explora el Mundo: Juego de Geografía</h1>
+    <div id="game-container">
+        <div id="map-container"></div>
+        <div id="info-panel">
+            <div id="country-name">Selecciona un país</div>
+            <div id="country-info"></div>
+        </div>
+    </div>
+    <div id="quiz-container">
+        <div id="quiz-question"></div>
+        <div id="quiz-options"></div>
+        <div id="quiz-result"></div>
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 500;
+        let currentCountry = null;
+
+        const svg = d3.select("#map-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const projection = d3.geoMercator()
+            .scale(130)
+            .translate([width / 2, height / 1.5]);
+
+        const path = d3.geoPath().projection(projection);
+
+        const countryInfo = {
+            "United States": {
+                capital: "Washington, D.C.",
+                population: "331 million",
+                language: "English",
+                funFact: "The U.S. has 50 states and is the third-largest country by total area."
+            },
+            "China": {
+                capital: "Beijing",
+                population: "1.4 billion",
+                language: "Mandarin Chinese",
+                funFact: "The Great Wall of China is the longest wall in the world, stretching over 13,000 miles."
+            },
+            "Brazil": {
+                capital: "Brasília",
+                population: "212 million",
+                language: "Portuguese",
+                funFact: "The Amazon Rainforest, located largely in Brazil, produces about 20% of the world's oxygen."
+            },
+            "Russia": {
+                capital: "Moscow",
+                population: "144 million",
+                language: "Russian",
+                funFact: "Russia is the largest country in the world, covering more than one-eighth of the Earth's inhabited land area."
+            },
+            "India": {
+                capital: "New Delhi",
+                population: "1.38 billion",
+                language: "Hindi, English, and 21 other official languages",
+                funFact: "India is the world's largest democracy and has the world's second-largest population."
+            }
+        };
+
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+            .then(function(world) {
+                const countries = topojson.feature(world, world.objects.countries);
+
+                svg.selectAll("path")
+                    .data(countries.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", path)
+                    .attr("class", "country")
+                    .on("click", function(event, d) {
+                        currentCountry = d.properties.name;
+                        updateInfoPanel(d.properties.name);
+                        generateQuiz(d.properties.name);
+                    });
+            });
+
+        function updateInfoPanel(countryName) {
+            const info = countryInfo[countryName];
+            if (info) {
+                document.getElementById("country-name").textContent = countryName;
+                document.getElementById("country-info").innerHTML = `
+                    <p><strong>Capital:</strong> ${info.capital}</p>
+                    <p><strong>Population:</strong> ${info.population}</p>
+                    <p><strong>Language:</strong> ${info.language}</p>
+                    <p><strong>Fun Fact:</strong> ${info.funFact}</p>
+                `;
+            } else {
+                document.getElementById("country-name").textContent = countryName;
+                document.getElementById("country-info").innerHTML = "<p>No hay información detallada disponible para este país.</p>";
+            }
+        }
+
+        function generateQuiz(countryName) {
+            const info = countryInfo[countryName];
+            if (!info) return;
+
+            const quizTypes = ["capital", "population", "language"];
+            const quizType = quizTypes[Math.floor(Math.random() * quizTypes.length)];
+
+            let question, correctAnswer, options;
+
+            switch (quizType) {
+                case "capital":
+                    question = `¿Cuál es la capital de ${countryName}?`;
+                    correctAnswer = info.capital;
+                    options = [info.capital, "París", "Tokio", "Londres"];
+                    break;
+                case "population":
+                    question = `¿Cuál es la población aproximada de ${countryName}?`;
+                    correctAnswer = info.population;
+                    options = [info.population, "100 million", "500 million", "1 billion"];
+                    break;
+                case "language":
+                    question = `¿Cuál es el idioma principal de ${countryName}?`;
+                    correctAnswer = info.language.split(",")[0].trim();
+                    options = [correctAnswer, "Español", "Francés", "Alemán"];
+                    break;
+            }
+
+            document.getElementById("quiz-question").textContent = question;
+            const quizOptions = document.getElementById("quiz-options");
+            quizOptions.innerHTML = "";
+
+            shuffleArray(options).forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.className = "quiz-option";
+                button.onclick = () => checkAnswer(option, correctAnswer);
+                quizOptions.appendChild(button);
+            });
+
+            document.getElementById("quiz-result").textContent = "";
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer) {
+            const resultElement = document.getElementById("quiz-result");
+            if (selectedAnswer === correctAnswer) {
+                resultElement.textContent = "¡Correcto! Bien hecho.";
+                resultElement.style.color = "green";
+            } else {
+                resultElement.textContent = `Incorrecto. La respuesta correcta es: ${correctAnswer}`;
+                resultElement.style.color = "red";
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
