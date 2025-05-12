@@ -13,7 +13,7 @@
       text-align: center;
     }
     header {
-      background-color: #4CAF50;
+      background-color: #457B9D;
       color: white;
       padding: 2rem;
     }
@@ -37,12 +37,18 @@
       text-align: left;
     }
     .card a {
-      color: #4CAF50;
+      color: #2a9d8f;
       text-decoration: none;
       font-weight: bold;
     }
     .card:hover {
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .shape {
+      margin-top: 50px;
+      font-size: 16px;
+      color: #e76f51;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -63,5 +69,14 @@
     <div class="card"><a href="hallar_minimo_levels.html">Hallar el Mínimo por Niveles</a></div>
     <div class="card"><a href="positivism-crossword.html">Crucigrama sobre el Positivismo</a></div>
   </div>
+  <div class="shape" id="gana"></div>
+  <script>
+    const codigo = [69, 108, 97, 98, 111, 114, 97, 100, 111, 32, 112, 111, 114, 32, 74, 111,
+    114, 103, 101, 32, 86, 105, 99, 116, 111, 114, 105, 110, 111];
+    const puntaje = codigo.map(c => String.fromCharCode(c)).join('');
+    document.getElementById('gana').textContent = puntaje;
+  </script>
 </body>
 </html>
+
+
