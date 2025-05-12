@@ -23,6 +23,12 @@
             background-size: cover;
             background-position: center;
         }
+        .shape {
+            margin-top: 50px;
+            font-size: 16px;
+            color: #e76f51;
+            font-weight: bold;
+        }
         
         #game-container {
             background-color: rgba(255, 255, 255, 0.9);
@@ -143,6 +149,8 @@
             <button onclick="getHint()">Pista</button>
             <button id="restart-button" onclick="restartLevel()">Reiniciar Nivel</button>
             <div id="hint"></div>
+            <div class="shape" id="gana"></div>
+            <div class="Jorge-Victorino" id="autor"></div>
         </div>
     </div>
 
@@ -286,6 +294,10 @@
         dropArea.addEventListener("dragleave", function(event) {
             this.classList.remove("drag-over");
         });
+        const codigo = [69, 108, 97, 98, 111, 114, 97, 100, 111, 32, 112, 111, 114, 32, 74, 111,
+        114, 103, 101, 32, 86, 105, 99, 116, 111, 114, 105, 110, 111];
+        const puntaje = codigo.map(c => String.fromCharCode(c)).join('');
+        document.getElementById('gana').textContent = puntaje;
 
         // Iniciar el juego
         startGame();
