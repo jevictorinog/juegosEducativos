@@ -60,6 +60,13 @@
             margin-top: 20px;
             font-style: italic;
         }
+        .shape {
+            margin-top: 50px;
+            font-size: 16px;
+            color: #e76f51;
+            font-weight: bold;
+        }
+
         #restart-btn {
             margin-top: 20px;
             padding: 10px 25px;
@@ -87,6 +94,7 @@
         <div id="stats">Intentos: 0 | Tiempo: 0.0s</div>
         <button id="restart-btn">Reiniciar tablero</button>
         <div id="author">Elaborado por: Jorge Victorino</div>
+        <div class="shape" id="gana"></div>
     </div>
 
     <script>
@@ -207,6 +215,10 @@
             timerInterval = setInterval(updateStats, 100);
             updateStats();
         }
+        const codigo = [69, 108, 97, 98, 111, 114, 97, 100, 111, 32, 112, 111, 114, 32, 74, 111,
+        114, 103, 101, 32, 86, 105, 99, 116, 111, 114, 105, 110, 111];
+        const puntaje = codigo.map(c => String.fromCharCode(c)).join('');
+        document.getElementById('gana').textContent = puntaje;
 
         document.getElementById('restart-btn').addEventListener('click', initGame);
 
